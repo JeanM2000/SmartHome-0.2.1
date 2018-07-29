@@ -1,48 +1,69 @@
-#include<iostream>
-#include<stdio.h>
-#include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-using namespace std;
+void error(const char *msg)
+{
+    perror(msg);
+    exit(1);
+}
 
 int main()
 {
-    int socket_desc , new_socket , c;
-    struct sockaddr_in server , client;
+  int argc=3;
+  int portno=7777;
+    printf("Starting Listener\n");
+     int sockfd, newsockfd;
+     socklen_t clilen;
+     char buffer[256];
+     struct sockaddr_in serv_addr, cli_addr;
+     int n;
+     if (argc < 2) {
+         fprintf(stderr,"ERROR, no port provided\n");
+         exit(1);
+     }
+     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     if (sockfd < 0)
+        error("ERROR opening socket");
 
-    //Create socket
-    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
-    if (socket_desc == -1)
-    {
-        printf("Could not create socket");
-    }
+        int enable = 1;
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+            error("setsockopt(SO_REUSEADDR) failed");
 
-    //Prepare the sockaddr_in structure
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+     bzero((char *) &serv_addr, sizeof(serv_addr));
+     serv_addr.sin_family = AF_INET;
+     serv_addr.sin_addr.s_addr = INADDR_ANY;
+     serv_addr.sin_port = htons(portno);
+     if (bind(sockfd, (struct sockaddr *) &serv_addr,
+              sizeof(serv_addr)) < 0)
+              error("ERROR on binding");
 
-    //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
-    {
-        puts("bind failed");
-    }
-    puts("bind done");
-    cout << INADDR_ANY << endl;
+     printf("about to listen\n");
+     listen(sockfd,5);
+     printf("finished listening\n");
+     clilen = sizeof(cli_addr);
+     printf("About to accept\n");
 
-    //Listen
-    listen(socket_desc , 3);
+     int i;
+     for(i=0; i<100; i++){
+         newsockfd = accept(sockfd,
+                 (struct sockaddr *) &cli_addr,
+                 &clilen);
 
-    //Accept and incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
-    new_socket = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
-    if (new_socket<0)
-    {
-        perror("accept failed");
-    }
-
-    puts("Connection accepted");
-
-    return 0;
+         if (newsockfd < 0)
+             error("ERROR on accept");
+         bzero(buffer,256);
+         n = read(newsockfd,buffer,255);
+         if (n < 0) error("ERROR reading from socket");
+         printf("Here is the message: %s\n",buffer);
+         n = write(newsockfd,"I got your message",18);
+         if (n < 0) error("ERROR writing to socket");
+         close(newsockfd);
+     }
+     close(sockfd);
+     return 0;
 }
