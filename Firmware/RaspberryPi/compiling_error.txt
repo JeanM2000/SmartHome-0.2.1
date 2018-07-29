@@ -1,0 +1,4 @@
+P:\SmartHome\Firmware\RaspberryPi\SmartHomeServer.cpp:2:23: fatal error: sys/socket.h: No such file or directory
+ #include<sys/socket.h>
+                       ^
+compilation terminated.
