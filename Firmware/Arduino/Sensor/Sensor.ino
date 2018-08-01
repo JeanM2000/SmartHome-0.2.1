@@ -41,12 +41,12 @@ void setup() {
   Serial.println(WiFi.localIP());
 }
 
-int value = 0;
+
+int fly=1001001100;
 
 void loop() {
-  delay(5000);
-  ++value;
 
+Serial.println(fly);
   Serial.print("connecting to ");
   Serial.println(host);
 
@@ -57,7 +57,6 @@ void loop() {
     Serial.println("connection failed");
     return;
   }
-  int fly=8;
 
   Serial.print("Requesting Server\n");
 
@@ -67,7 +66,6 @@ void loop() {
   Serial.println(fly);
   unsigned long timeout = millis();
       client.stop();
-  
 
   // Read all the lines of the reply from server and print them to Serial
   while (client.available()) {
@@ -76,5 +74,6 @@ void loop() {
   }
 
   Serial.println("closing connection\n\n");
+    delay(10000);
 }
 

@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <iostream>
+
+using namespace std;
 
 void error(const char *msg)
 {
@@ -12,8 +15,11 @@ void error(const char *msg)
     exit(1);
 }
 
+int arr[2][4];
+
 int main()
 {
+  int col=0;
   int argc=3;
   int portno=7777;
     printf("Starting Listener\n");
@@ -48,8 +54,7 @@ int main()
      clilen = sizeof(cli_addr);
      printf("About to accept\n");
 
-     int i;
-     for(i=0; i<100; i++){
+     for(int i=0; i<100;){
          newsockfd = accept(sockfd,
                  (struct sockaddr *) &cli_addr,
                  &clilen);
@@ -59,7 +64,45 @@ int main()
          bzero(buffer,256);
          n = read(newsockfd,buffer,255);
          if (n < 0) error("ERROR reading from socket");
+
          printf("Here is the message: %s\n",buffer);
+int buff[10];
+         for (int i = 0; i < 10; i++) {
+           buff[i] = buffer[i] - 48;
+         }
+
+         for (int i = 0; i < 10; i++) {
+           cout << buffer[i] << endl;
+         }
+              int row=0;
+              int adr=0;
+              int sen=0;
+              int typ=0;
+              int dat=0;
+
+                adr = buff[0]*100 + buff[1]*10 + buff[2];
+                sen = buff[3]*100 + buff[4]*10 + buff[5];
+                typ = buff[6];
+                dat = buff[7]*100 + buff[8]+10 + buff[9];
+                row = adr + sen;
+
+                  cout << adr << endl;
+                  cout << sen << endl;
+                  cout << typ << endl;
+                  cout << row << endl;
+
+                arr[0][0] = adr;
+                arr[0][1] = sen;
+                arr[0][2] = typ;
+                arr[0][3] = dat;
+
+              for(int a=0; a<2; a++){
+                for(int i=0; i<4; i++){
+                  cout << arr[a][i] << "\t";
+                }
+                cout << endl;
+              }
+
          n = write(newsockfd,"I got your message",18);
          if (n < 0) error("ERROR writing to socket");
          close(newsockfd);
